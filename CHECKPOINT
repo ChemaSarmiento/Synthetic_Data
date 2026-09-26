@@ -1,0 +1,185 @@
+# Synthetic Engine — agent handoff
+
+Prepared 2026-09-26 at the user's explicit request to publish a checkpoint on a
+handoff branch. This is a curated public copy of the local operational CHECKPOINT;
+account/billing identifiers and machine-specific details have been omitted.
+Historical local-only instructions do not prohibit this explicitly authorized copy.
+The original operational CHECKPOINT stays local. Do not publish credentials,
+account details, raw datasets or learned artifacts when updating this handoff.
+
+## Start here
+
+- Repository: https://github.com/ChemaSarmiento/Synthetic_Data
+- Handoff branch: `handoff/agent-checkpoint`.
+- Code baseline: `407242b` on `main`, engine version **0.5.0**.
+- User language: Spanish. Communicate concise outcomes and next steps.
+- Product: a general reference-backed synthetic-data engine. Banking is its first
+  production domain; AML is an optional scenario, not the whole product.
+- Use **uv**, `uv.lock` and the pinned Python version in `.python-version`.
+- Follow specifications under `specs/`; record scope, assumptions and verification.
+- Prefer reproducible exploratory samples of at most **10,000 rows**, and read only
+  compact aggregates into conversational context. Full validations may run when
+  appropriate; report their summary. Avoid dumping raw source data or long files.
+- Latest completed request: optional cheque and cash-mediated payment mechanisms.
+  Next implementation milestone: **CAL-011 conditional frequency fitting and
+  held-out evaluation accounting for payment eligibility**.
+
+## Bootstrap and verify
+
+```bash
+git clone --branch handoff/agent-checkpoint git@github.com:ChemaSarmiento/Synthetic_Data.git
+cd Synthetic_Data
+uv sync --locked
+uv run --locked pytest -q
+uv run --locked synthetic-engine domains
+uv run --locked synthetic-engine generate \
+  --config configs/banking/cheque-cash.json \
+  --output outputs/handoff-cheque-cash-10k
+```
+
+Generation refuses to overwrite existing directories: choose a new output path
+for reruns. Baseline/AML and cheque-cash presets work without reference downloads.
+A new machine needs its own Git/GCP authentication if those services are used.
+Do not assume the original developer's local tools, files or login exist.
+
+## Architecture and important files
+
+- `src/synthetic_engine/{config,core,registry,engine,validation,cli}.py`: generic run
+  configuration, domain protocol/registry, orchestration, inventory checks and CLI.
+- `src/synthetic_engine/outputs/parquet.py`: atomic Parquet output, Zstd, hashes.
+- `src/synthetic_engine/calibration/histogram.py`: reusable conditional numeric
+  histograms, deterministic training/holdout split, fitting/sampling/comparison.
+- `src/synthetic_engine/calibration/categorical.py`: descriptive joint category,
+  weekday/hour profiling with bounded cardinality and source provenance.
+- `src/synthetic_engine/domains/banking/`: banking parameters, generator, validation,
+  evidence, numeric binding, payment schema and optional payment mechanisms.
+- `src/synthetic_engine/domains/banking/scenarios/aml.py`: optional AML motifs and
+  benign controls; separate ground truth rather than labels in feature tables.
+- `specs/domains/banking/spec.md`: BANK-PAY-002 schema and BANK-PAY-003 mechanisms.
+- `specs/calibration/{spec,plan,tasks}.md`: calibration requirements and open tasks.
+- `docs/{calibration,adding-domains,roadmap}.md`: usage, extensions and roadmap.
+- `references/banking/`: source metadata, papers, original notes and payment semantics.
+- `scripts/{sample_ibm,normalize_ibm_sample}.py`: bounded exploration and normalization.
+
+Only banking is a production domain. A non-banking test fixture verifies the
+extension contract; it is not an implemented second domain. SQL/JSONL outputs,
+streaming, distributed generation, resume support and a 15 GB run are not complete.
+
+## Current behavior and limitations
+
+Banking generates skewed account activity, relationships, timestamps, purposes,
+amounts, FX assumptions and point-in-time historical features. AML supports fan-in,
+fan-out, chain and cycle motifs with benign controls. AML can be disabled entirely.
+No balance ledger, recurring obligations or full network calibration exists.
+
+Numeric calibration optionally fits background principal amounts by payment
+currency against IBM. It does not fit country/currency mix, timing, FX, labels,
+customer segments or scenario amounts. Whole-domain `empirically_calibrated` stays
+false. Row holdout is not future-time or account-disjoint validation. Previous
+conditional histogram distances improved from roughly 0.22–0.29 to 0.02–0.03;
+this is not a full-realism or model-performance score.
+
+Payment schema v2 is opt-in (`payment_schema_version: 2`); v1 remains the default.
+V2 adds format, raw source format, provenance, mapping status and asset class.
+Source/provenance metadata is excluded from default model features. Reference
+normalization preserves all seven IBM formats but does not turn reference rows
+into generated engine transactions. Investment/crypto generation remains absent.
+
+`payment_mechanisms` defaults to zero probabilities. Positive settings require v2.
+- Cheque: supplier_payment, salary or personal_transfer; branch channel.
+- Cash: purchase or personal_transfer; in_person channel.
+- Both: same country/currency, distinct owners/accounts, unit FX, equal principal
+  paid/received and assumed zero fees.
+- Disjoint candidate probability intervals are filtered by eligibility; ineligible
+  draws keep their original rail. Probabilities are not final population shares.
+- A separate deterministic per-day RNG leaves original amounts, entities, timestamps,
+  histories and AML truth unchanged. Selection does not read AML labels/motifs.
+- Cash is an abstract cash-mediated transfer, NOT separate withdrawals/deposits or
+  ATM activity. Cheques lack clearing delays, bounce states and balance checks.
+- The default example's 0.15/0.15 probabilities are explicit assumptions, not fits.
+
+## Reference and local artifacts
+
+Primary benchmark is **IBM AMLworld**, not AMLSim, and is synthetic, not actual
+banking records. Official dataset:
+https://www.kaggle.com/datasets/ealtman2019/ibm-transactions-for-anti-money-laundering-aml
+
+Registered file: `HI-Small_Trans.csv`, dataset v8 (catalog update 2025-07-08).
+License: CDLA-Sharing-1.0 (different from the IBM code repository license).
+Bytes: 475664283; rows: 5078345; currencies: 15; laundering positives: 5177.
+SHA256: b19d39f515523373f991b689c07e11e7b0b95c17a2c27a87d91584ae16c5b040.
+Source wall-clock timezone is unspecified. Observations span only 18 days; do not
+claim annual seasonality or silently treat those hours as UTC/customer-local time.
+Source version/hash should be checked before reproducing the analysis.
+
+The following paths exist only on the original workspace, NOT in Git:
+- `data/references/ibm-aml/HI-Small_Trans.csv`
+- `outputs/calibration/ibm-hi-small-v03/profile.json`
+- `outputs/calibration/ibm-patterns/profile.json`
+- `outputs/samples/ibm-exploration-10k/sample.parquet`
+- `outputs/samples/ibm-payments-v2-10k/`
+- `outputs/banking-cheque-cash-v05-10k/`
+
+A remote agent must acquire the reference independently or obtain a separately
+authorized artifact transfer. The commands below require the registered raw CSV:
+
+```bash
+uv run --locked python scripts/sample_ibm.py \
+  --output outputs/samples/ibm-exploration-10k
+uv run --locked python scripts/normalize_ibm_sample.py \
+  --input outputs/samples/ibm-exploration-10k/sample.parquet \
+  --output outputs/samples/ibm-payments-v2-10k
+uv run --locked synthetic-engine calibrate \
+  --input data/references/ibm-aml/HI-Small_Trans.csv \
+  --config configs/calibration/ibm-hi-small.json \
+  --output outputs/calibration/ibm-hi-small-v03
+```
+
+Exploration sample: seed 20260926, equal allocation across seven formats, exactly
+10000 rows, bottom-k priorities, weights N_h/n_h. Source scanned once for sampling
+plus byte scans for integrity hashes; subsequent exploration uses the small sample.
+Unweighted category frequencies are biased; labels are not sampling strata.
+Sample SHA256: a721413d6cf5f1580b31339ad0cdf8268ec835476f66a80aacd603357ca675d8.
+Do not use this full-source exploratory sample as if it were an independent test set.
+
+Registered papers (notes and BibTeX are already in the repo):
+- AMLworld, Altman et al. (2023): https://arxiv.org/abs/2306.16424
+- AMLSim, Weber et al. (2018): https://arxiv.org/abs/1812.00076
+- SynthAML, Jensen et al. (2023): https://doi.org/10.1038/s41597-023-02569-2
+- LaundroGraph, Cardoso et al. (2022): https://arxiv.org/abs/2210.14360
+
+## Last verified results
+
+- **77 tests passed** on version 0.5.0, Python 3.14.4, using locked dependencies.
+- Previous v0.4 pilot validated with current code; default and zero-option compatibility,
+  batch invariance and unchanged AML truth verified by tests.
+- 10000-row cheque/cash pilot: cheque849, cash596, card2225,
+  bank_transfer5177, wire1153. Parquet bytes1377946.
+- Local generation approximately0.317s, validation0.130s, peak RSS119.97MiB.
+  These are machine-specific pilot measurements, not scale or cloud guarantees.
+- Working tree was clean at handoff preparation; code through407242b pushed to main.
+
+## Next work, in order
+
+1. Review current specs; turn CAL-011 into concrete acceptance criteria before edits.
+2. Specify conditional category fitting and unseen/unsupported category behavior.
+   Preserve unsupported mass; do not silently renormalize to claim IBM coverage.
+3. Define a temporal holdout BEFORE fitting. Respect sample weights and train/test
+   isolation; the current category/time profile is descriptive full-source analysis.
+4. Fit/evaluate reachable payment shares under eligibility restrictions. IBM does
+   not provide all engine purpose/ownership semantics, so document identifiability
+   gaps rather than inventing directly learned eligibility rules.
+5. Test generated outputs against held-out observations with coverage, uncertainty
+   and structural checks; no blanket realism claims.
+6. Later: account activity/recurrence, investment and crypto models, second domain,
+   SQL/JSONL adapters, larger pilots, 15 GB sizing/resumability, then streaming.
+
+## GCP authorization boundary
+
+User has a GCP project with billing linked and a project monthly budget of
+**MXN400**, with 50/80/100% alerts. Budget alerts are not a hard spending cap.
+No workload infrastructure has been deployed by this project work. Present the
+specific resources and estimated cost to the user BEFORE creating cloud workloads.
+This handoff is NOT deployment authorization. Original cloud account/project/budget
+identifiers are intentionally omitted; ask the user when deployment becomes relevant.
+Joint checkpoint/spec review remains pending and must not be recorded as approval.
