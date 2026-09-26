@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "synthetic-data-engine"
+version = "0.1.0"
+description = "Evidence-documented synthetic datasets with a banking AML pilot"
+requires-python = ">=3.11"
+dependencies = ["numpy>=2.2,<3", "pyarrow>=19,<24"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10"]
+
+[project.scripts]
+synthetic-engine = "synthetic_engine.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+synthetic_engine = ["evidence/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

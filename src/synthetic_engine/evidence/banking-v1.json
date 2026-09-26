@@ -1,0 +1,43 @@
+{
+  "profile_id": "banking-literature-preset-v1",
+  "mode": "literature_informed_preset",
+  "empirically_calibrated": false,
+  "retrieved_date": "2026-09-26",
+  "sources": [
+    {
+      "id": "ibm-aml-data",
+      "url": "https://github.com/IBM/AML-Data",
+      "type": "synthetic_dataset_documentation",
+      "license_note": "Repository Apache-2.0; dataset CDLA-Sharing-1.0. No dataset downloaded or redistributed.",
+      "supports": ["separate banks and accounts", "payment formats and currencies", "transaction-level ground truth"],
+      "limitations": "This is a synthetic benchmark, not observed customer banking data."
+    },
+    {
+      "id": "amlworld-paper-2023",
+      "url": "https://arxiv.org/abs/2306.16424",
+      "title": "Realistic Synthetic Financial Transactions for Anti-Money Laundering Models",
+      "type": "paper",
+      "supports": ["entity-based financial simulation", "legitimate and illicit activity in the same transaction network"],
+      "limitations": "Conceptual reference only; no fitted parameters or copied simulator implementation."
+    },
+    {
+      "id": "ibm-amlsim-parameters",
+      "url": "https://github.com/IBM/AMLSim/blob/master/paramFiles/README.md",
+      "type": "simulator_documentation",
+      "supports": ["fan-in", "fan-out", "cycle", "linked transaction motifs"],
+      "limitations": "Motifs support test scenarios, not real-world prevalence estimates."
+    }
+  ],
+  "assumptions": {
+    "population": "Five illustrative countries: US, MX, GB, DE, BR with customer weights 0.35/0.25/0.15/0.15/0.10. Country weights and bank mixes are invented; accounts are domestic to customer residence.",
+    "activity": "Lognormal account activity weights; weekday, month-end and payday multipliers are illustrative.",
+    "amounts": "Segment-dependent lognormal USD-equivalent amounts, with household/business and purpose adjustments; not fitted.",
+    "relationships": "Synthetic common ownership, domestic household/corporate groups and persistent preferred counterparties; 90% domestic preference draws, before self-transfer correction.",
+    "fx": "Fixed illustrative local-currency units per USD; not historical rates or prices.",
+    "time": "Country representative IANA timezone; intraday preference uses opening-date UTC offset (no DST calendar), no holidays.",
+    "aml": "Four-edge motifs, shared with benign controls; minority fraction is configurable, not an observed rate.",
+    "funding": "No balance ledger, external funding or settlement model in v0.1; outgoing amounts are not balance-constrained.",
+    "account_history": "All accounts predate the observation window. Historical features have a cold start at the window boundary."
+  },
+  "pending": ["fit parameters to a user-supplied reference dataset", "quantify fidelity against reference data", "model recurring obligations and account lifecycles", "rolling windows and network holdout", "funding-consistent simulation"]
+}
