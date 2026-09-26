@@ -3,6 +3,7 @@
 import hashlib
 import json
 from pathlib import Path
+import re
 import pyarrow as pa
 import pyarrow.parquet as pq
 
@@ -21,13 +22,25 @@ def sha256(path: Path):
     return digest.hexdigest()
 
 
+def safe_segment(value: str):
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.=-]*", value):
+        raise ValueError(f"Unsafe output path segment: {value!r}")
+    return value
+
+
 class ParquetOutput:
     def __init__(self, root: Path):
         self.root = root
         self.files = []
 
     def write(self, relative: str, table: pa.Table):
+        if any(not part or part in (".", "..") for part in relative.split("/")):
+            raise ValueError("Unsafe output path")
         path = self.root / relative
+        if not path.resolve().is_relative_to(self.root.resolve()):
+            raise ValueError("Output path escapes run directory")
+        if path.exists():
+            raise FileExistsError(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         temporary = path.with_suffix(".parquet.tmp")
         pq.write_table(table, temporary, compression="zstd", compression_level=3, row_group_size=64_000)

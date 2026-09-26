@@ -8,13 +8,16 @@ import pytest
 from synthetic_engine.config import Config
 from synthetic_engine.domains.banking import BankingDomain
 from synthetic_engine.engine import generate
-from synthetic_engine.output import sha256, write_json
-from synthetic_engine.validation import read, validate
+from synthetic_engine.outputs.parquet import sha256, write_json
+from synthetic_engine.checks import read
+from synthetic_engine.validation import validate
 
 
 def small(**kwargs):
-    return Config(**({"rows": 2400, "accounts": 100, "banks": 10, "days": 3, "batch_rows": 113,
-                     "laundering_fraction": 0.08, "legitimate_motif_fraction": 0.12} | kwargs))
+    flat = {"domain": "banking_aml", "rows": 2400, "accounts": 100, "banks": 10, "days": 3, "batch_rows": 113,
+            "laundering_fraction": 0.08, "legitimate_motif_fraction": 0.12} | kwargs
+    return Config.from_dict(flat)
+
 
 
 def event_tables(config):
@@ -43,7 +46,7 @@ def test_complete_run_and_motif_controls(tmp_path):
         assert report["scenario_counts"]["legitimate_" + name] > 0
     quantiles = report["amount_usd_quantiles"]
     assert quantiles["p99"] > quantiles["p50"] * 10
-    features = json.loads((root / "model_features.json").read_text())["transaction_features"]
+    features = json.loads((root / "model_features.json").read_text())["features"]
     assert not {"transaction_id", "scenario_id", "is_laundering", "scenario_motif"} & set(features)
     assert not json.loads((root / "evidence.json").read_text())["empirically_calibrated"]
 
@@ -112,7 +115,7 @@ def test_replay_detects_leaked_history_even_with_updated_checksum(tmp_path):
 ])
 def test_invalid_configuration(kwargs):
     with pytest.raises(ValueError):
-        small(**kwargs)
+        BankingDomain(small(**kwargs))
 
 
 def test_tiny_run_and_no_scenarios(tmp_path):

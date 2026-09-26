@@ -1,51 +1,92 @@
-# Synthetic Data
+# Synthetic Engine
 
-Evidence-backed synthetic datasets, starting with banking transactions and anti-money-laundering research.
+A Python engine for reproducible synthetic datasets grounded in documented
+references. The engine provides orchestration and delivery; domain modules define
+entities and behavior; optional scenarios add specific use cases.
+
+**Banking is the first domain. AML is one optional scenario inside banking.**
+Future domains may cover retail, logistics, telemetry or other data, each with its
+own references, configuration and acceptance tests.
+
+## Architecture
+
+```mermaid
+flowchart TD
+    S[Versioned specifications and reference profiles] --> E[Synthetic Engine]
+    E --> B[Banking domain]
+    B --> N[Ordinary banking behavior]
+    B --> A[Optional AML scenario]
+    E -. future modules .-> D[Other domains]
+    E --> P[Parquet adapter]
+    E -. future adapters .-> O[SQL / JSON / streaming]
+```
 
 ## Status
 
-The first local Python engine is working: a banking/AML preset produces Parquet datasets, separate ground truth, account-level clustering summaries, provenance manifests, and integrity reports. No cloud workload infrastructure has been deployed.
+v0.2 implements a local domain registry, configuration contracts, batch generation,
+Parquet delivery, optional ground truth, evidence manifests and integrity validation.
+The banking module provides both a baseline and an AML example. No cloud workload
+infrastructure has been deployed.
 
-This version uses documented simulation assumptions informed by published references. **It has not been empirically calibrated against real transactions or the IBM dataset.**
+The current banking reference profile is **literature-informed, not empirically
+calibrated**. Published sources support concepts; numerical presets are documented
+assumptions. No IBM dataset or real customer records have been used for fitting.
 
-## Quick start
+## Quick start with uv
 
-Requires Python 3.11+ on Linux (tested with Python 3.14).
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
 ```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -e '.[dev]'
-.venv/bin/synthetic-engine generate --config configs/banking-demo.json --output outputs/demo
-.venv/bin/synthetic-engine validate outputs/demo
-.venv/bin/synthetic-engine estimate outputs/demo --target-gb 15
-.venv/bin/pytest -q
+uv sync --locked
+uv run --locked synthetic-engine domains
+uv run --locked synthetic-engine generate --config configs/banking/baseline.json --output outputs/banking
+uv run --locked synthetic-engine generate --config configs/banking/aml-demo.json --output outputs/aml
+uv run --locked synthetic-engine validate outputs/aml
+uv run --locked pytest -q
 ```
 
-Use a new output directory for each run. Generated data stays outside Git. For the exact tested dependency versions, install `requirements-dev.lock` before installing the project.
+`uv.lock` is the dependency source of truth. `.python-version` selects Python
+3.14.4, the tested Linux development runtime. Python 3.11+ is allowed by package
+metadata, but other interpreter/platform combinations need their own validation.
+The `dev` dependency group is installed by default. Virtual environments and
+outputs remain outside Git. Always use a new output directory.
 
-The demo creates 100,000 transactions across 5,000 accounts, 30 banks, five countries and 30 days. It includes 39 transaction columns, historical behavioral features, and four graph motif families with both illicit scenarios and legitimate controls. The demo's requested 0.4% illicit fraction is a testing assumption; actual prevalence is reported after rounding to complete scenarios.
+Each demo generates 100,000 transactions across 5,000 accounts, 30 banks, five
+countries and 30 days. The AML example requests a simulated 0.4% illicit fraction;
+actual prevalence is reported after complete-scenario rounding. The baseline
+exports no AML ground truth or classification target.
 
-See the [local engine guide](docs/local-engine.md) for table semantics, modeling guidance, memory bounds and current limitations. Automatic 15 GB targeting, fitted reference profiles, SQL/JSON outputs, cloud execution and streaming are subsequent milestones.
+## Repository map
 
-## Design
+```text
+specs/                         product/domain/scenario contracts, plans and tasks
+configs/<domain>/              runnable domain examples
+src/synthetic_engine/
+  config.py, core.py            common configuration and domain protocol
+  registry.py                  explicit domain registration
+  engine.py, validation.py     orchestration and shared integrity checks
+  outputs/                     domain-independent delivery adapters
+  domains/banking/             banking config, generator, validator and evidence
+    scenarios/aml.py           optional AML behavior and topology checks
+tests/                         domain and engine acceptance tests
+docs/                          usage, extension guide and roadmap
+references/                    source-documentation template
+```
 
-- Shared Python engine: reproducible seeds, bounded-memory batches, checkpoints, stable entity and event IDs.
-- Domain modules: entities, relationships, temporal behavior, constraints, and scenarios; banking/AML first.
-- Evidence registry: source URL, publication date, license, findings, applicability, uncertainty, and explicit assumptions.
-- Calibration: learn distributions and dependencies from reference datasets; distinguish empirical estimates from literature-informed assumptions.
-- Validation: relational integrity, temporal consistency, distribution fidelity, network behavior, and feature leakage checks.
-- Outputs: Parquet first, then JSONL, PostgreSQL and BigQuery; Pub/Sub event replay later.
+## Specification-driven development
 
-Each dataset should include a manifest recording configuration, seed, code version, source versions, row counts, byte sizes, and validation results. Simulator ground truth must remain separate from model features.
+Start with [the specification workflow](specs/README.md). New domains begin with
+[a specification template](specs/templates/domain.md), named references, output
+contracts and testable acceptance criteria. Follow the [extension guide](docs/adding-domains.md)
+to implement them. This is a lightweight repository workflow, not automatic
+simulation generation from papers.
 
-## Milestones
+## Next milestones
 
-1. Repository, architecture, evidence contracts, and local GCP setup.
-2. Banking/AML generator with a small validated sample, then approximately 15 GB of compressed Parquet.
-3. Containerized batch execution, SQL and semi-structured outputs, and reviewed GCP infrastructure.
-4. Streaming replay with rate control, late events, duplicates, and resumability.
-5. Additional domains through the same module interface.
+See [the roadmap](docs/roadmap.md): empirical calibration, another reference-backed
+domain, additional output adapters, larger-run sizing, reviewed cloud batch
+execution, and streaming. The 15 GB goal belongs to the banking/AML use case,
+not a requirement imposed on every engine domain.
 
-IBM AML data is a candidate reference and is itself synthetic. Calibration against it must not be described as calibration against real customer records.
-
-See [GCP setup](docs/gcp-setup.md) and [evidence template](references/template.yaml).
+[Banking usage and limits](docs/local-engine.md) · [GCP setup](docs/gcp-setup.md) ·
+[Reference template](references/template.yaml)

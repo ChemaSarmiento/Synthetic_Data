@@ -9,11 +9,13 @@ import sys
 from synthetic_engine.config import Config
 from synthetic_engine.engine import generate
 from synthetic_engine.validation import validate
+from synthetic_engine.registry import list_domains
 
 
 def main():
     parser = argparse.ArgumentParser(prog="synthetic-engine")
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("domains", help="List registered domains and their specifications")
     gen = sub.add_parser("generate", help="Generate and validate a new local Parquet dataset")
     gen.add_argument("--config", type=Path, required=True)
     gen.add_argument("--output", type=Path, required=True, help="New directory; existing directories are never overwritten")
@@ -25,7 +27,9 @@ def main():
     estimate.add_argument("--target-gb", type=float, default=15.0, help="Decimal GB of all Parquet tables")
     args = parser.parse_args()
     try:
-        if args.command == "generate":
+        if args.command == "domains":
+            print(json.dumps(list_domains(), indent=2))
+        elif args.command == "generate":
             config = Config.load(args.config)
             if args.rows is not None:
                 config = replace(config, rows=args.rows)
@@ -46,7 +50,7 @@ def main():
                 "rough_rows": round(result["config"]["rows"] * ratio),
                 "rough_generation_seconds": metrics["generation_seconds"] * ratio,
                 "rough_validation_seconds": metrics["validation_seconds"] * ratio,
-                "limitations": "Linear pilot extrapolation only. Compression, fixed dimensions, file sizes, population and hardware change results. Not an executable plan or GCP cost estimate. Daily row safety limits still apply.",
+                "limitations": "Linear pilot extrapolation only. Compression, fixed dimensions, file sizes, population and hardware change results. Not an executable plan or GCP cost estimate. Domain-specific resource limits still apply.",
             }, indent=2))
         return 0
     except (ValueError, TypeError, OSError, KeyError) as exc:

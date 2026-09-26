@@ -1,0 +1,20 @@
+{
+  "domain": "banking",
+  "seed": 20260926,
+  "rows": 100000,
+  "batch_rows": 10000,
+  "parameters": {
+    "accounts": 5000,
+    "banks": 30,
+    "days": 30,
+    "start_date": "2025-01-01",
+    "max_day_rows": 250000,
+    "scenarios": {
+      "aml": {
+        "enabled": true,
+        "laundering_fraction": 0.004,
+        "legitimate_motif_fraction": 0.04
+      }
+    }
+  }
+}

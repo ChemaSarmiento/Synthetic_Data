@@ -6,23 +6,26 @@ calibration is claimed. Memory is bounded by population size plus one day.
 
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
+from importlib.resources import files
+import json
 import numpy as np
 import pyarrow as pa
 
 from synthetic_engine.config import Config
 from synthetic_engine.core import Batch
+from synthetic_engine.domains.banking.config import BankingConfig
+from synthetic_engine.domains.banking.scenarios.aml import inject, apply_amount_patterns
 
 COUNTRIES = np.array(["US", "MX", "GB", "DE", "BR"])
 CURRENCIES = np.array(["USD", "MXN", "GBP", "EUR", "BRL"])
 TIMEZONES = ["America/New_York", "America/Mexico_City", "Europe/London", "Europe/Berlin", "America/Sao_Paulo"]
 FX = np.array([1.0, 18.0, 0.8, 0.92, 5.0])  # Illustrative, NOT historical quotes.
 BANK_TYPES = np.array(["retail", "commercial", "private", "digital", "cooperative"])
-MOTIFS = np.array(["fan_in", "fan_out", "chain", "cycle"])
 
 
 class BankingDomain:
     def __init__(self, config: Config):
-        self.config = c = config
+        self.config = c = BankingConfig.from_run(config)
         rng = np.random.default_rng(np.random.SeedSequence([c.seed, 0]))
         self.start = datetime.combine(date.fromisoformat(c.start_date), datetime.min.time(), timezone.utc)
         self.start_us = int(self.start.timestamp() * 1_000_000)
@@ -133,45 +136,8 @@ class BankingDomain:
         ts = self.start_us + day * 86_400_000_000 + (utc_hour * 3_600_000_000).astype(np.int64)
         order = np.argsort(ts, kind="stable")
         ts, src, dst = ts[order], src[order], dst[order]
-        label = np.zeros(n, dtype=bool)
-        scenario = np.full(n, -1, dtype=np.int64)
-        typology = np.full(n, "none", dtype="U16")
-        # Match legitimate and illicit motifs in structure and amount distribution.
-        # Their labels encode simulator intent, not an observable decision rule.
-        used = np.zeros(n, dtype=bool)
-        motif_sets = []
-        for illicit, fraction in ((True, c.laundering_fraction), (False, c.legitimate_motif_fraction)):
-            count = int(n * fraction / 4)
-            for _ in range(count):
-                if n < 4:
-                    break
-                positions = None
-                for attempt in range(20):
-                    first = int(rng.integers(0, n - 3))
-                    end = int(np.searchsorted(ts, ts[first] + 90 * 60 * 1_000_000, side="right"))
-                    available = np.flatnonzero(~used[first:end]) + first
-                    if len(available) >= 4:
-                        positions = np.sort(rng.choice(available, 4, replace=False))
-                        break
-                if positions is None:
-                    continue
-                nodes = rng.choice(c.accounts, 5, replace=False)
-                kind = self.scenario_counter % 4
-                if kind == 0:
-                    a, b = nodes[1:], np.repeat(nodes[0], 4)
-                elif kind == 1:
-                    a, b = np.repeat(nodes[0], 4), nodes[1:]
-                elif kind == 2:
-                    a, b = nodes[:-1], nodes[1:]
-                else:
-                    a, b = nodes[:4], np.roll(nodes[:4], -1)
-                src[positions], dst[positions] = a, b
-                used[positions] = True
-                label[positions] = illicit
-                scenario[positions] = self.scenario_counter
-                typology[positions] = MOTIFS[kind]
-                motif_sets.append(positions)
-                self.scenario_counter += 1
+        label, scenario, typology, motif_sets, self.scenario_counter = inject(
+            rng, src, dst, ts, c.accounts, c.aml, self.scenario_counter)
         # Purposes and rails are selected after motifs, so neither exposes labels.
         business = self.business[src]
         purpose = np.where(business, "supplier_payment", "purchase").astype("U24")
@@ -188,9 +154,7 @@ class BankingDomain:
         channel[(rail != "card") & (rng.random(n) < 0.35)] = "mobile"
         amount = rng.lognormal(np.log(self.amount_scale[src]), 0.9)
         amount[salary] = rng.lognormal(7.2, 0.4, salary.sum())
-        for ix in motif_sets:
-            base = rng.lognormal(6.0, 0.85)
-            amount[ix] = base * rng.uniform(0.96, 1.04, 4)
+        apply_amount_patterns(amount, motif_sets, rng)
         paid = np.maximum(1, np.rint(amount * FX[self.country[src]] * 100)).astype(np.int64)
         usd = paid / (100 * FX[self.country[src]])
         rate = FX[self.country[dst]] / FX[self.country[src]]
@@ -274,7 +238,7 @@ class BankingDomain:
                 "scenario_id": scenario, "scenario_motif": typology,
             })
             for begin in range(0, int(n), c.batch_rows):
-                yield Batch(day_date.isoformat(), events.slice(begin, c.batch_rows), truth.slice(begin, c.batch_rows))
+                yield Batch(day_date.isoformat(), events.slice(begin, c.batch_rows), truth.slice(begin, c.batch_rows) if c.aml.enabled else None)
             offset += int(n)
 
     def summaries(self):
@@ -289,3 +253,17 @@ class BankingDomain:
             "cross_border_share": np.divide(self.cross_count, self.out_count, out=np.zeros(c.accounts), where=self.out_count > 0),
             "active_days": self.observed_days,
         })}
+
+    def evidence(self):
+        profile = json.loads(files("synthetic_engine.domains.banking").joinpath("evidence.json").read_text())
+        profile["active_scenarios"] = ["aml"] if self.config.aml.enabled else []
+        return profile
+
+    def model_features(self, schema):
+        excluded = {"transaction_id", "timestamp", "sender_account_id", "receiver_account_id", "sender_bank_id", "receiver_bank_id"}
+        return {
+            "features": [name for name in schema.names if name not in excluded],
+            "excluded_identifiers": sorted(excluded),
+            "target": "ground_truth.is_laundering" if self.config.aml.enabled else None,
+            "notes": "Fit encoding/scaling on training data only. Chronological split required. Do not join whole-window summaries into transaction prediction features.",
+        }
