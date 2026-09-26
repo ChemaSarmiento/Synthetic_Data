@@ -12,12 +12,17 @@ from synthetic_engine.validation import validate
 from synthetic_engine.registry import list_domains
 from synthetic_engine.calibration.histogram import FitConfig, fit, compare, load_profile
 from synthetic_engine.outputs.parquet import write_json
+from synthetic_engine.calibration.categorical import profile_categories
 
 
 def main():
     parser = argparse.ArgumentParser(prog="synthetic-engine")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("domains", help="List registered domains and their specifications")
+    categorical = sub.add_parser("profile-categories", help="Describe joint categorical and source-clock patterns")
+    categorical.add_argument("--input", type=Path, required=True)
+    categorical.add_argument("--config", type=Path, required=True)
+    categorical.add_argument("--output", type=Path, required=True)
     calibration = sub.add_parser("calibrate", help="Fit a local reference numeric profile with holdout diagnostics")
     calibration.add_argument("--input", type=Path, required=True)
     calibration.add_argument("--config", type=Path, required=True)
@@ -43,6 +48,11 @@ def main():
     try:
         if args.command == "domains":
             print(json.dumps(list_domains(), indent=2))
+        elif args.command == "profile-categories":
+            result = profile_categories(args.input, args.output, **json.loads(args.config.read_text()))
+            print(json.dumps({"output": str(args.output), "audit": result["audit"],
+                              "joint_cells": len(result["joint_counts"]),
+                              "profile_sha256": result["profile_sha256"]}, indent=2))
         elif args.command == "calibrate":
             config = FitConfig(**json.loads(args.config.read_text()))
             profile = fit(args.input, config, args.output)

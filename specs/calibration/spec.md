@@ -61,3 +61,27 @@ run evidence, embedding the profile so validation does not need the original fil
 No joint copula or sequence fitting, entity-aware holdout, privacy guarantee,
 automatic paper-to-code extraction, GCP deployment, or real-world effectiveness
 claim. IBM fitting is calibration against synthetic reference data.
+
+## CAL-009: categorical and temporal reference audit
+
+Status: implemented as descriptive profiling; generator binding remains pending.
+
+Before fitting payment/time behavior, produce a reusable joint categorical profile
+with source weekday/hour dimensions, explicit source-clock semantics, raw daily
+counts and weekday calendar exposure. Inputs are local CSV/Parquet with configurable
+category columns and timestamp format. Process bounded batches, cap joint cardinality
+and calendar span, audit missing/invalid rows, verify source hashes before/after,
+refuse overwrite, and fingerprint the resulting artifact.
+
+Acceptance: exact joint counts on fixtures; CSV/Parquet semantic equivalence;
+deterministic repeatability; invalid-row accounting; cardinality and empty-input
+rejection; zero-event calendar days included in exposure. No cloud resources.
+
+The IBM timestamp timezone is unspecified. Do not silently interpret it as UTC or
+customer-local time. Payment Format and engine payment_rail are not automatically
+interchangeable. A full-source descriptive profile is not a held-out fitted model.
+
+Next slice: document explicit payment-category semantics and coverage, define a
+training-only categorical model with unseen-category diagnostics and temporal
+holdout, then add an optional banking binding and independent generated-data checks.
+Account activity requires composite bank/account identities and separate analysis.

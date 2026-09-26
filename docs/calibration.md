@@ -118,3 +118,35 @@ records `amount_calibration.status=partial_reference_fit` and source origin.
 - No differential-privacy guarantee is provided for learned aggregates.
 - Next fitting targets: payment formats, temporal behavior and account activity,
   then joint/network dependencies and independent fidelity experiments.
+
+## Payment and source-clock profiling
+
+Before applying temporal or payment patterns, inspect their joint distribution:
+
+```bash
+uv run --locked synthetic-engine profile-categories \
+  --input data/references/ibm-aml/HI-Small_Trans.csv \
+  --config configs/calibration/ibm-patterns.json \
+  --output outputs/calibration/ibm-patterns/profile.json
+```
+
+This domain-independent command profiles configurable categories together with
+source weekday/hour. It records daily volumes, weekday calendar exposure, invalid
+rows and source/artifact hashes. Processing uses bounded batches and an explicit
+joint-cell limit. CSV and Parquet inputs are supported. Raw reference data and
+learned artifacts remain local.
+
+This is a descriptive audit of the full source, not a held-out fitted model, and
+does not change generated transactions. IBM source-clock timezone is unspecified;
+hours cannot be interpreted as UTC or customer-local time. Calendar exposure is
+inferred between observed endpoints, which may be partial; a short observed period
+does not establish annual seasonality. Payment Format needs an explicit semantic
+mapping before it can influence engine payment rails or purposes.
+
+Measured IBM HI-Small audit: 5,078,345 valid rows, zero invalid rows,
+15 currencies, seven payment formats and 12,351 occupied joint cells. Observed
+source-clock range: 2022-09-01 00:00 through 2022-09-18 16:18. Weekday means
+vary substantially (approximately 69,279 Sunday rows/day to 532,580 Thursday
+rows/day); these are descriptive statistics of this short synthetic sample,
+not a validated recurring schedule. Profile SHA256:
+`dbd56424a32dd6869dd5d1acf525e00db4ae60d5c10fbc0965b4ee964ac4f93a`.

@@ -1,0 +1,17 @@
+{
+  "columns": [
+    "Payment Currency",
+    "Payment Format"
+  ],
+  "timestamp": "Timestamp",
+  "timestamp_format": "%Y/%m/%d %H:%M",
+  "source_metadata": {
+    "id": "ibm-amlworld-hi-small-v8",
+    "title": "IBM AMLworld HI-Small transaction benchmark",
+    "url": "https://www.kaggle.com/datasets/ealtman2019/ibm-transactions-for-anti-money-laundering-aml",
+    "version": "8 (2025-07-08)",
+    "license": "CDLA-Sharing-1.0",
+    "origin": "synthetic_benchmark"
+  },
+  "max_cells": 100000
+}

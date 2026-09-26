@@ -19,3 +19,11 @@
 
 Reference evaluation covers amount distributions only. Full-domain calibration,
 model performance and real-world transfer are not established.
+
+## Categorical/time extension
+
+- [x] CAL-009: generic bounded joint profiling CLI with calendar exposure and provenance.
+- [x] Test categorical counts, invalid timestamps, calendar gaps and CSV/Parquet equivalence.
+- [ ] CAL-010: explicit IBM payment-format to engine semantics and coverage decision.
+- [ ] CAL-011: training-only categorical fit, temporal holdout and generator binding.
+- [ ] CAL-012: account activity, recurrence and network evaluation.
