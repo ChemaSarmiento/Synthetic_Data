@@ -1,0 +1,20 @@
+{
+  "schema_version": "payment-mapping-1",
+  "status": "design_only_not_applied",
+  "source_id": "ibm-amlworld-hi-small-v8",
+  "source_column": "Payment Format",
+  "target_column": "payment_rail",
+  "mappings": {
+    "ACH": {"target": "bank_transfer", "status": "coarsening", "constraint": "Source subtype lost; do not infer purpose or country eligibility"},
+    "Credit Card": {"target": "card", "status": "coarsening", "constraint": "Do not infer POS channel or purchase purpose from source format alone"},
+    "Wire": {"target": "wire", "status": "conditional", "constraint": "Source format does not establish cross-border status"},
+    "Cheque": {"target": null, "status": "unsupported"},
+    "Cash": {"target": null, "status": "unsupported"},
+    "Reinvestment": {"target": null, "status": "unsupported"},
+    "Bitcoin": {"target": null, "status": "unsupported"}
+  },
+  "unknown_policy": "error",
+  "unsupported_policy": "report_without_renormalizing",
+  "decision": "Preserve source payment format in a future versioned schema before generator integration; do not force unsupported formats into existing rails",
+  "limitations": ["Mapping is an engineering interpretation, not a claim of universal payment-system equivalence", "Temporal and payment fitting require held-out evaluation", "No generator changes in this slice"]
+}

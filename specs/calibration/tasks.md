@@ -24,6 +24,8 @@ model performance and real-world transfer are not established.
 
 - [x] CAL-009: generic bounded joint profiling CLI with calendar exposure and provenance.
 - [x] Test categorical counts, invalid timestamps, calendar gaps and CSV/Parquet equivalence.
-- [ ] CAL-010: explicit IBM payment-format to engine semantics and coverage decision.
+- [x] CAL-010: explicit IBM payment-format to engine semantics and coverage decision.
 - [ ] CAL-011: training-only categorical fit, temporal holdout and generator binding.
 - [ ] CAL-012: account activity, recurrence and network evaluation.
+
+- [x] Reproducible 10,000-row stratified exploratory sample with weights and local manifest.

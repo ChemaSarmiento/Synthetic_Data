@@ -150,3 +150,8 @@ vary substantially (approximately 69,279 Sunday rows/day to 532,580 Thursday
 rows/day); these are descriptive statistics of this short synthetic sample,
 not a validated recurring schedule. Profile SHA256:
 `dbd56424a32dd6869dd5d1acf525e00db4ae60d5c10fbc0965b4ee964ac4f93a`.
+
+For subsequent exploratory work, use the [10,000-row weighted sample and payment
+mapping decision](../references/banking/payment-semantics.md). Read compact aggregates
+instead of raw rows into conversational context. Full validations may still run,
+with only their summaries displayed.
