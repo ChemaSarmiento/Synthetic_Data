@@ -29,3 +29,5 @@ model performance and real-world transfer are not established.
 - [ ] CAL-012: account activity, recurrence and network evaluation.
 
 - [x] Reproducible 10,000-row stratified exploratory sample with weights and local manifest.
+- [x] BANK-PAY-002: opt-in payment schema v2, strict preset validation and IBM sample normalization.
+- [ ] CAL-011 prerequisite: implement mechanisms/eligibility for newly represented formats before sampling them into transactions.

@@ -9,6 +9,7 @@ from synthetic_engine.checks import require, read, values
 from synthetic_engine.config import Config
 from synthetic_engine.domains.banking.config import BankingConfig
 from synthetic_engine.domains.banking.scenarios.aml import validate_topology
+from synthetic_engine.domains.banking.payments import validate_preset_fields
 
 
 def validate_banking(root: Path, manifest: dict):
@@ -58,6 +59,7 @@ def validate_banking(root: Path, manifest: dict):
             check_scenarios()
             current_partition = partition
         tx = read(root / relative)
+        validate_preset_fields(tx, config.payment_schema_version)
         truth = read(root / relative.replace("transactions/", "ground_truth/", 1)) if config.aml.enabled else None
         n = tx.num_rows
         require(all(col.null_count == 0 for col in tx.columns), "unexpected nulls")

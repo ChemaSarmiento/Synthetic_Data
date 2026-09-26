@@ -155,3 +155,7 @@ For subsequent exploratory work, use the [10,000-row weighted sample and payment
 mapping decision](../references/banking/payment-semantics.md). Read compact aggregates
 instead of raw rows into conversational context. Full validations may still run,
 with only their summaries displayed.
+
+Payment schema v2 and the bounded IBM sample normalizer are now implemented; see
+[the mapping and runnable examples](../references/banking/payment-semantics.md#implemented-schema-extension-v04).
+Representation coverage is not generative coverage or fitted behavior.

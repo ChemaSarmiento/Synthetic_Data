@@ -244,6 +244,10 @@ class BankingDomain:
                 "is_utc_weekend": np.full(n, day_date.weekday() >= 5),
                 **features,
             })
+            if c.payment_schema_version == 2:
+                from synthetic_engine.domains.banking.payments import preset_fields
+                for name, field_values in preset_fields(rail).items():
+                    events = events.append_column(name, pa.array(field_values, type=pa.string()))
             truth = pa.table({
                 "transaction_id": np.arange(offset, offset + n), "is_laundering": label,
                 "scenario_id": scenario, "scenario_motif": typology,
@@ -268,6 +272,12 @@ class BankingDomain:
     def evidence(self):
         profile = json.loads(files("synthetic_engine.domains.banking").joinpath("evidence.json").read_text())
         profile["active_scenarios"] = ["aml"] if self.config.aml.enabled else []
+        profile["payment_schema"] = {
+            "version": self.config.payment_schema_version,
+            "generation_mode": "preset",
+            "reference_formats_applied": False,
+            "limitations": "Schema representation does not add cash, cheque, investment or crypto simulation",
+        }
         if self.amount_model is not None:
             profile["amount_calibration"] = self.amount_model.evidence()
             profile["mode"] = "partially_reference_fitted"
@@ -278,6 +288,7 @@ class BankingDomain:
 
     def model_features(self, schema):
         excluded = {"transaction_id", "timestamp", "sender_account_id", "receiver_account_id", "sender_bank_id", "receiver_bank_id"}
+        excluded.update({"source_payment_format", "payment_format_origin", "payment_mapping_status"} & set(schema.names))
         return {
             "features": [name for name in schema.names if name not in excluded],
             "excluded_identifiers": sorted(excluded),

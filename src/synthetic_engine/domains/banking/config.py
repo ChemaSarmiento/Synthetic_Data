@@ -20,8 +20,11 @@ class BankingConfig:
     max_day_rows: int = 250_000
     aml: AMLConfig = field(default_factory=AMLConfig)
     amount_calibration: AmountCalibration | None = None
+    payment_schema_version: int = 1
 
     def __post_init__(self):
+        if type(self.payment_schema_version) is not int or self.payment_schema_version not in {1, 2}:
+            raise ValueError("payment_schema_version must be 1 or 2")
         for key in ("accounts", "banks", "days", "max_day_rows"):
             if type(getattr(self, key)) is not int:
                 raise ValueError(f"{key} must be an integer")
@@ -38,7 +41,7 @@ class BankingConfig:
         if config.domain != "banking":
             raise ValueError("BankingConfig requires the banking domain")
         parameters = dict(config.parameters)
-        allowed = {"accounts", "banks", "days", "start_date", "max_day_rows", "scenarios", "amount_calibration"}
+        allowed = {"accounts", "banks", "days", "start_date", "max_day_rows", "scenarios", "amount_calibration", "payment_schema_version"}
         if parameters.keys() - allowed:
             raise ValueError(f"Unknown banking parameters: {sorted(parameters.keys() - allowed)}")
         scenarios = parameters.pop("scenarios", {})
