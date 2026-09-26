@@ -16,6 +16,7 @@ IBM_FORMATS = {
 PAYMENT_FIELDS = ("payment_format", "source_payment_format", "payment_format_origin",
                   "payment_mapping_status", "payment_asset_class")
 PRESET_FORMATS = {"bank_transfer": "bank_transfer_unspecified", "card": "card_unspecified", "wire": "wire"}
+PRESET_FORMATS.update(cheque="cheque", cash="cash")
 
 
 def preset_fields(rails):

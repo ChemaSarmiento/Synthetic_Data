@@ -6,6 +6,7 @@ from datetime import date
 from synthetic_engine.config import Config
 from synthetic_engine.domains.banking.scenarios.aml import AMLConfig
 from synthetic_engine.domains.banking.calibration import AmountCalibration
+from synthetic_engine.domains.banking.mechanisms import PaymentMechanisms
 
 
 @dataclass(frozen=True)
@@ -21,10 +22,13 @@ class BankingConfig:
     aml: AMLConfig = field(default_factory=AMLConfig)
     amount_calibration: AmountCalibration | None = None
     payment_schema_version: int = 1
+    payment_mechanisms: PaymentMechanisms = field(default_factory=PaymentMechanisms)
 
     def __post_init__(self):
         if type(self.payment_schema_version) is not int or self.payment_schema_version not in {1, 2}:
             raise ValueError("payment_schema_version must be 1 or 2")
+        if self.payment_mechanisms.enabled and self.payment_schema_version != 2:
+            raise ValueError("Payment mechanisms require payment_schema_version=2")
         for key in ("accounts", "banks", "days", "max_day_rows"):
             if type(getattr(self, key)) is not int:
                 raise ValueError(f"{key} must be an integer")
@@ -42,6 +46,7 @@ class BankingConfig:
             raise ValueError("BankingConfig requires the banking domain")
         parameters = dict(config.parameters)
         allowed = {"accounts", "banks", "days", "start_date", "max_day_rows", "scenarios", "amount_calibration", "payment_schema_version"}
+        allowed.add("payment_mechanisms")
         if parameters.keys() - allowed:
             raise ValueError(f"Unknown banking parameters: {sorted(parameters.keys() - allowed)}")
         scenarios = parameters.pop("scenarios", {})
@@ -54,8 +59,12 @@ class BankingConfig:
         if calibration is not None and not isinstance(calibration, dict):
             raise ValueError("amount_calibration must be a configuration object")
         binding = AmountCalibration(**calibration) if calibration is not None else None
+        mechanisms = parameters.pop("payment_mechanisms", {})
+        if not isinstance(mechanisms, dict):
+            raise ValueError("payment_mechanisms must be an object")
         return cls(seed=config.seed, rows=config.rows, batch_rows=config.batch_rows,
-                   aml=AMLConfig(**aml), amount_calibration=binding, **parameters)
+                   aml=AMLConfig(**aml), amount_calibration=binding,
+                   payment_mechanisms=PaymentMechanisms(**mechanisms), **parameters)
 
 
 def migrate_legacy(payload: dict):

@@ -171,6 +171,11 @@ class BankingDomain:
         rate = FX[self.country[dst]] / FX[self.country[src]]
         received = np.maximum(1, np.rint(paid * rate)).astype(np.int64)
         fee = np.rint(paid * np.where(cross, 0.002, 0.0001)).astype(np.int64)
+        if c.payment_mechanisms.enabled:
+            from synthetic_engine.domains.banking.mechanisms import apply_mechanisms
+            apply_mechanisms(c.payment_mechanisms, rail, channel, purpose,
+                             self.country[src], self.country[dst], self.owner[src] == self.owner[dst], c.seed, day)
+            fee[np.isin(rail, ["cheque", "cash"])] = 0
         return ts, src, dst, label, scenario, typology, purpose, rail, channel, paid, usd, rate, received, fee
 
     def _features(self, day, ts, src, dst, usd):
@@ -276,7 +281,14 @@ class BankingDomain:
             "version": self.config.payment_schema_version,
             "generation_mode": "preset",
             "reference_formats_applied": False,
-            "limitations": "Schema representation does not add cash, cheque, investment or crypto simulation",
+            "limitations": "Investment and crypto simulation remain unsupported; cash represents an abstract cash-mediated transfer, not ATM/deposit events",
+        }
+        profile["payment_mechanisms"] = {
+            "cheque_probability": self.config.payment_mechanisms.cheque_probability,
+            "cash_probability": self.config.payment_mechanisms.cash_probability,
+            "empirically_calibrated": False,
+            "scope": "Domestic same-currency transfers between distinct owners; purpose eligibility; zero assumed fee",
+            "limitations": "Assumed probabilities, no clearing delay, cash inventory, balance checks, deposit/withdrawal legs or denomination model",
         }
         if self.amount_model is not None:
             profile["amount_calibration"] = self.amount_model.evidence()

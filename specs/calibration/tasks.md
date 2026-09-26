@@ -31,3 +31,5 @@ model performance and real-world transfer are not established.
 - [x] Reproducible 10,000-row stratified exploratory sample with weights and local manifest.
 - [x] BANK-PAY-002: opt-in payment schema v2, strict preset validation and IBM sample normalization.
 - [ ] CAL-011 prerequisite: implement mechanisms/eligibility for newly represented formats before sampling them into transactions.
+- [x] BANK-PAY-003: opt-in, explicitly assumed cheque/cash eligibility and accounting rules; 10k pilot.
+- [ ] CAL-011: fit conditional candidate rates on training data and evaluate held-out realized shares under eligibility constraints.

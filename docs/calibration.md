@@ -159,3 +159,8 @@ with only their summaries displayed.
 Payment schema v2 and the bounded IBM sample normalizer are now implemented; see
 [the mapping and runnable examples](../references/banking/payment-semantics.md#implemented-schema-extension-v04).
 Representation coverage is not generative coverage or fitted behavior.
+
+An optional cheque/cash preset is available in `configs/banking/cheque-cash.json`.
+Its probabilities are explicit assumptions; they must not be described as learned
+IBM frequencies. Eligibility constraints change realized rates. The next fitting
+stage must evaluate realized distributions, not just configured probabilities.

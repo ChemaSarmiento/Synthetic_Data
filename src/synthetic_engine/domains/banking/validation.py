@@ -10,6 +10,7 @@ from synthetic_engine.config import Config
 from synthetic_engine.domains.banking.config import BankingConfig
 from synthetic_engine.domains.banking.scenarios.aml import validate_topology
 from synthetic_engine.domains.banking.payments import validate_preset_fields
+from synthetic_engine.domains.banking.mechanisms import validate_mechanisms
 
 
 def validate_banking(root: Path, manifest: dict):
@@ -40,6 +41,7 @@ def validate_banking(root: Path, manifest: dict):
     cross_count = 0
     country_counts = Counter()
     purpose_counts = Counter()
+    rail_counts = Counter()
     motif_counts = Counter()
     per_day = Counter()
     sampled_amounts = []
@@ -60,6 +62,7 @@ def validate_banking(root: Path, manifest: dict):
             current_partition = partition
         tx = read(root / relative)
         validate_preset_fields(tx, config.payment_schema_version)
+        validate_mechanisms(tx, config.payment_mechanisms)
         truth = read(root / relative.replace("transactions/", "ground_truth/", 1)) if config.aml.enabled else None
         n = tx.num_rows
         require(all(col.null_count == 0 for col in tx.columns), "unexpected nulls")
@@ -122,6 +125,7 @@ def validate_banking(root: Path, manifest: dict):
         per_day[partition] += n
         country_counts.update(values(tx, "sender_country").tolist())
         purpose_counts.update(values(tx, "purpose").tolist())
+        rail_counts.update(values(tx, "payment_rail").tolist())
         sampled_amounts.extend(usd[ids % stride == 0].tolist())
         offset += n
     check_scenarios()
@@ -140,6 +144,7 @@ def validate_banking(root: Path, manifest: dict):
         "amount_usd_quantiles": dict(zip(["p50", "p90", "p99"], np.quantile(sampled_amounts, [0.5, 0.9, 0.99]).tolist())),
         "quantile_method": "deterministic transaction-ID stride sample, at most about 100k rows",
         "sender_country_counts": dict(country_counts), "purpose_counts": dict(purpose_counts),
+        "payment_rail_counts": dict(rail_counts),
         "scenario_counts": dict(motif_counts), "daily_rows": dict(per_day),
         "checks": ["checksums", "row counts", "foreign keys", "chronology", "FX", "relationships", "ground truth separation", "historical count/mean replay", "scenario topology", "account summary reconciliation"],
         "limitations": ["No empirical reference comparison", "No balance ledger validation", "Not a guarantee of downstream model generalization"],

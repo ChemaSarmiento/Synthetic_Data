@@ -1,4 +1,4 @@
-# BANK — Banking domain v0.4
+# BANK — Banking domain v0.5
 
 Status: implemented. Banking baseline and AML pilots are validated. Optional v0.3 amount calibration is evaluated against IBM's synthetic reference; temporal and network calibration remain pending.
 
@@ -70,3 +70,39 @@ minor-unit arithmetic, investment lifecycle or timestamp interpretation is added
 Acceptance: old-column equality across v1/v2; batch invariance; all seven IBM
 formats preserved; unknown labels rejected; no raw-column mutation; preset schema
 inconsistency rejected; full v2 generation/validation pilot and feature exclusions.
+
+## BANK-PAY-003 — Cheque and cash-mediated presets (v0.5)
+
+Status: implemented, optional and **not reference fitted**. This extends the v0.4
+representation with constrained event selection. It is not a settlement ledger.
+
+`payment_mechanisms` accepts `cheque_probability` and `cash_probability`, both
+finite numbers in [0,1], with sum <= 1. Missing values default to zero. Positive
+values require `payment_schema_version=2`. A separate deterministic random stream
+per day leaves the existing generator stream unchanged. A draw first chooses a
+candidate format through disjoint intervals; ineligible candidates retain their
+previous rail. Consequently configured probabilities are not final global shares.
+No ground-truth label, motif or scenario field participates in selection.
+
+| Mechanism | Eligible purpose | Channel | Interpretation |
+| --- | --- | --- | --- |
+| cheque | supplier_payment, salary, personal_transfer | branch | Abstract completed cheque transfer |
+| cash | purchase, personal_transfer | in_person | Abstract cash-mediated transfer between modeled parties |
+
+Both require same country/currency, distinct owners and distinct accounts. They
+preserve principal amounts, timestamps, account relationships and existing truth;
+FX is one, principal received equals principal paid, and assumed fees are zero.
+These are explicit modeling constraints, not banking regulations or empirical
+facts. No threshold-based amount limits or inferred customer risk are added.
+
+Cash is not an ATM withdrawal or cash deposit: no separate cash wallet, teller,
+deposit/withdrawal legs, denominations or cash-in-transit tracking exists. Cheques
+have no issue/clearing timeline, bounced state or balance verification. Do not use
+these mechanisms to claim settlement or balance-ledger realism. Amount calibration,
+when enabled, remains conditional on currency, not payment format. Investment and
+crypto generation remain unsupported.
+
+Acceptance: default/zero setting compatibility; batch invariance; full probability
+selects exactly eligible rows; invalid probabilities/schema combinations rejected;
+independent stored-row validation rejects nonzero fees and disabled mechanisms;
+AML truth and all unrelated values unchanged. Validator reports payment-rail counts.

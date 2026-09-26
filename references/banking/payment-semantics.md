@@ -70,3 +70,18 @@ The normalizer retains source values and sample weights, adds explicit payment
 semantics, and records input/output hashes. It accepts at most 10,000 rows. The
 preset generator remains compatible: v2 is opt-in and appends fields without
 changing existing values. Reference-origin metadata is excluded from model features.
+
+## Optional cheque/cash mechanism pilot (v0.5)
+
+```bash
+uv run --locked synthetic-engine generate \
+  --config configs/banking/cheque-cash.json \
+  --output outputs/banking-cheque-cash-10k
+```
+
+The 10,000-row pilot uses assumed candidate probabilities of 0.15 each. Observed:
+849 cheque, 596 cash, 2,225 card, 5,177 bank_transfer, 1,153 wire. Eligibility reduces
+realized shares: these rates are not fitted IBM frequencies. Selection does not
+use AML labels. Cash here is an abstract cash-mediated transfer, not separately
+modeled cash withdrawals/deposits. See BANK-PAY-003 for accounting and limitations.
+No full reference reread was needed for this implementation.
