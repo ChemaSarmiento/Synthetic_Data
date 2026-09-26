@@ -1,0 +1,16 @@
+# Copy for each source; no real calibration has been performed yet.
+source_id: null
+title: null
+url: null
+publication_date: null
+accessed_date: null
+license: null
+source_type: null # dataset, paper, official_statistics, domain_report
+population_and_geography: null
+observation_period: null
+findings: []
+supported_parameters: []
+calibration_method: null
+uncertainty: null
+limitations: []
+simulation_assumptions: []
