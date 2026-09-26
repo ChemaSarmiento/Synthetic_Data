@@ -36,9 +36,11 @@ and assumptions. The engine validates that these fields exist with the required
 types; it cannot verify that a paper supports a scientific claim. Review the
 source-to-parameter mapping in the specification.
 
-The next calibration feature should add immutable dataset identifiers/hashes,
-fitting methods, uncertainty and held-out comparisons. Until those exist, describe
-a domain as assumptions-only or literature-informed, not empirically calibrated.
+The [shared calibration module](calibration.md) now records source hashes, a fitting
+method and row-held-out diagnostics for conditional numeric histograms. Domains can
+bind those profiles to explicit parameters, as banking does for amounts. Preserve
+the distinction between a partially fitted parameter and full-domain fidelity.
+Joint models, uncertainty estimates and entity/time holdouts remain future work.
 
 ## Extension limits
 

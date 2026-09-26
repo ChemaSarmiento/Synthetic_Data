@@ -1,0 +1,43 @@
+{
+  "id": "ibm-amlworld-hi-small-v8",
+  "title": "IBM Transactions for Anti Money Laundering (AML): HI-Small",
+  "url": "https://www.kaggle.com/datasets/ealtman2019/ibm-transactions-for-anti-money-laundering-aml",
+  "version": "Kaggle dataset version 8, catalog update 2025-07-08",
+  "license": "CDLA-Sharing-1.0",
+  "origin": "synthetic_benchmark",
+  "publisher": "Erik Altman / IBM",
+  "retrieved_date": "2026-09-26",
+  "file": "HI-Small_Trans.csv",
+  "bytes": 475664283,
+  "sha256": "b19d39f515523373f991b689c07e11e7b0b95c17a2c27a87d91584ae16c5b040",
+  "catalog_dataset_id": 2948142,
+  "catalog_version": 8,
+  "upstream_documentation": "https://github.com/IBM/AML-Data",
+  "primary_paper": "https://arxiv.org/abs/2306.16424",
+  "notes": [
+    "The dataset license differs from the IBM repository code license.",
+    "Raw data is stored locally outside Git; public repository contains metadata and original research notes only.",
+    "AMLSim and AMLworld are distinct simulators. This file is the AMLworld benchmark.",
+    "Use the file digest for exact provenance; paper-era row counts can differ from later releases."
+  ],
+  "observed_statistics": {
+    "rows": 5078345,
+    "label_counts": {
+      "0": 5073168,
+      "1": 5177
+    },
+    "payment_format_counts": {
+      "Reinvestment": 481056,
+      "Cheque": 1864331,
+      "Credit Card": 1323324,
+      "ACH": 600797,
+      "Cash": 490891,
+      "Wire": 171855,
+      "Bitcoin": 146091
+    },
+    "first_timestamp_as_recorded": "2022/09/01 00:00",
+    "last_timestamp_as_recorded": "2022/09/18 16:18",
+    "timestamp_timezone": "not specified in source CSV",
+    "currency_groups": 15
+  }
+}

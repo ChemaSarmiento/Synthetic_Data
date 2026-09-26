@@ -1,6 +1,6 @@
 # ENG — Synthetic Engine contract v0.2
 
-Status: implemented. Verified with 41 passing tests, locked uv sync and wheel build on Python 3.14.4/Linux. Reference calibration remains pending.
+Status: implemented. Locked uv sync, wheel packaging and acceptance tests are verified on Python 3.14.4/Linux. A shared partial reference-calibration capability was added in v0.3; see [CAL](../calibration/spec.md).
 
 ## Purpose and scope
 
@@ -39,8 +39,10 @@ Registration is explicit in Python; automatic discovery of third-party packages 
 Every profile distinguishes measured parameters, literature-informed assumptions
 and unresolved questions. References identify source URLs, applicability and
 licensing where known. No source present means assumptions-only, not calibrated.
-The run stores the full profile and its digest. Empirical calibration requires a
-named dataset/version, fitting method and held-out fidelity results (future work).
+The run stores the full profile and its digest. Parameter calibration requires a
+named dataset/version, fitting method and held-out diagnostics. The first v0.3
+implementation provides these for conditional numeric histograms; full-domain
+fidelity requires additional domain-specific evidence.
 
 ## Acceptance criteria
 

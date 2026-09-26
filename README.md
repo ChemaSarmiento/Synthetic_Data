@@ -23,14 +23,16 @@ flowchart TD
 
 ## Status
 
-v0.2 implements a local domain registry, configuration contracts, batch generation,
+v0.3 implements a local domain registry, configuration contracts, batch generation,
 Parquet delivery, optional ground truth, evidence manifests and integrity validation.
 The banking module provides both a baseline and an AML example. No cloud workload
 infrastructure has been deployed.
 
-The current banking reference profile is **literature-informed, not empirically
-calibrated**. Published sources support concepts; numerical presets are documented
-assumptions. No IBM dataset or real customer records have been used for fitting.
+The default banking preset is literature-informed. Optional [reference calibration](docs/calibration.md)
+now fits conditional payment-amount distributions to **IBM's synthetic HI-Small
+benchmark**, with source hashes and held-out diagnostics. This is partial parameter
+calibration; timing, relationships and AML scenarios remain assumptions. No real
+customer banking records have been used.
 
 ## Quick start with uv
 
@@ -66,6 +68,7 @@ src/synthetic_engine/
   registry.py                  explicit domain registration
   engine.py, validation.py     orchestration and shared integrity checks
   outputs/                     domain-independent delivery adapters
+  calibration/                 shared reference fitting, sampling and comparison
   domains/banking/             banking config, generator, validator and evidence
     scenarios/aml.py           optional AML behavior and topology checks
 tests/                         domain and engine acceptance tests
@@ -83,7 +86,7 @@ simulation generation from papers.
 
 ## Next milestones
 
-See [the roadmap](docs/roadmap.md): empirical calibration, another reference-backed
+See [the roadmap](docs/roadmap.md): broader reference calibration, another reference-backed
 domain, additional output adapters, larger-run sizing, reviewed cloud batch
 execution, and streaming. The 15 GB goal belongs to the banking/AML use case,
 not a requirement imposed on every engine domain.

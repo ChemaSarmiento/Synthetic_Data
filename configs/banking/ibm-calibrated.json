@@ -1,0 +1,25 @@
+{
+  "domain": "banking",
+  "seed": 20260926,
+  "rows": 100000,
+  "batch_rows": 10000,
+  "parameters": {
+    "accounts": 5000,
+    "banks": 30,
+    "days": 30,
+    "start_date": "2025-01-01",
+    "max_day_rows": 250000,
+    "scenarios": {"aml": {"enabled": false}},
+    "amount_calibration": {
+      "profile": "outputs/calibration/ibm-hi-small-v03/profile.json",
+      "group_mapping": {
+        "USD": "US Dollar",
+        "MXN": "Mexican Peso",
+        "GBP": "UK Pound",
+        "EUR": "Euro",
+        "BRL": "Brazil Real"
+      },
+      "missing_group": "error"
+    }
+  }
+}

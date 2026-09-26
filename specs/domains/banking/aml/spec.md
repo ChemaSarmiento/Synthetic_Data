@@ -1,6 +1,6 @@
 # AML — Optional banking scenario v0.2
 
-Status: implemented. Banking baseline and AML pilots validated; all 64 AML Parquet file hashes match the retained v0.1 pilot with unchanged runtime dependencies. Reference calibration remains pending.
+Status: implemented. Banking baseline and AML pilots are validated. AML scenario parameters remain assumptions; v0.3 background-amount calibration does not fit scenario behavior.
 
 Scenario ID: `aml`, under the `banking` domain. This is a use case inside banking,
 not a top-level engine domain or a requirement for other synthetic datasets.

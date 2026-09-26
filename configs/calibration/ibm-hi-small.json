@@ -1,0 +1,21 @@
+{
+  "source": {
+    "id": "ibm-amlworld-hi-small-v8",
+    "title": "IBM AMLworld HI-Small transaction benchmark",
+    "url": "https://www.kaggle.com/datasets/ealtman2019/ibm-transactions-for-anti-money-laundering-aml",
+    "version": "8 (2025-07-08)",
+    "license": "CDLA-Sharing-1.0",
+    "origin": "synthetic_benchmark"
+  },
+  "value_column": "Amount Paid",
+  "group_column": "Payment Currency",
+  "unit": "payment_currency_major",
+  "transform": "log",
+  "bins": 128,
+  "seed": 20260926,
+  "holdout_fraction": 0.2,
+  "batch_rows": 65536,
+  "max_groups": 256,
+  "min_train": 100,
+  "min_holdout": 30
+}

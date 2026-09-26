@@ -14,6 +14,7 @@ import pyarrow as pa
 from synthetic_engine.config import Config
 from synthetic_engine.core import Batch
 from synthetic_engine.domains.banking.config import BankingConfig
+from synthetic_engine.domains.banking.calibration import BankingAmountModel
 from synthetic_engine.domains.banking.scenarios.aml import inject, apply_amount_patterns
 
 COUNTRIES = np.array(["US", "MX", "GB", "DE", "BR"])
@@ -47,6 +48,8 @@ class BankingDomain:
             probabilities = bank_weight[bank_pool] / bank_weight[bank_pool].sum()
             self.bank[ix] = rng.choice(bank_pool, len(ix), p=probabilities)
         self.country = self.bank_country[self.bank]
+        self.amount_model = (BankingAmountModel(c.amount_calibration, CURRENCIES[np.unique(self.country)])
+                             if c.amount_calibration is not None else None)
         self.customer_group = np.zeros(customer_count, dtype=np.int64)
         group_offset = 0
         for country in range(5):
@@ -154,7 +157,15 @@ class BankingDomain:
         channel[(rail != "card") & (rng.random(n) < 0.35)] = "mobile"
         amount = rng.lognormal(np.log(self.amount_scale[src]), 0.9)
         amount[salary] = rng.lognormal(7.2, 0.4, salary.sum())
+        if self.amount_model is not None:
+            eligible = np.ones(n, dtype=bool)
+            for positions in motif_sets:
+                eligible[positions] = False
+            self.amount_model.apply(amount, self.country[src], CURRENCIES, FX, eligible, rng)
         apply_amount_patterns(amount, motif_sets, rng)
+        maximum_minor = np.max(amount * FX[self.country[src]] * 100)
+        if not np.all(np.isfinite(amount)) or maximum_minor >= 2**63 - 1:
+            raise ValueError("Generated amount exceeds finite int64 minor-unit representation")
         paid = np.maximum(1, np.rint(amount * FX[self.country[src]] * 100)).astype(np.int64)
         usd = paid / (100 * FX[self.country[src]])
         rate = FX[self.country[dst]] / FX[self.country[src]]
@@ -257,6 +268,12 @@ class BankingDomain:
     def evidence(self):
         profile = json.loads(files("synthetic_engine.domains.banking").joinpath("evidence.json").read_text())
         profile["active_scenarios"] = ["aml"] if self.config.aml.enabled else []
+        if self.amount_model is not None:
+            profile["amount_calibration"] = self.amount_model.evidence()
+            profile["mode"] = "partially_reference_fitted"
+            # Whole-domain fidelity is still unverified even when one parameter is fitted.
+            profile["empirically_calibrated"] = False
+            profile["sources"].append(self.amount_model.profile["fit_config"]["source"])
         return profile
 
     def model_features(self, schema):

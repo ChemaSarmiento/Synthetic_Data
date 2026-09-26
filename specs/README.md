@@ -23,6 +23,7 @@ Git review; this workflow does not add a separate approval requirement for local
 - [Engine contract](engine/spec.md), [plan](engine/plan.md), [tasks](engine/tasks.md).
 - [Banking domain](domains/banking/spec.md).
 - [Optional AML scenario](domains/banking/aml/spec.md).
+- [Reference calibration](calibration/spec.md), [plan](calibration/plan.md), [tasks](calibration/tasks.md).
 - [New domain template](templates/domain.md).
 - [Roadmap](../docs/roadmap.md).
 

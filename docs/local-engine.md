@@ -1,4 +1,4 @@
-# Banking domain usage (engine v0.2)
+# Banking domain usage (engine v0.3)
 
 ## Run
 
@@ -41,11 +41,11 @@ Start clustering with `summaries/account_summaries.parquet`, excluding account I
 
 ## Evidence and limitations
 
-The preset is literature-informed and **not empirically calibrated**. Sources support the conceptual design, not the chosen numerical parameters. The machine-readable evidence profile is packaged at `src/synthetic_engine/domains/banking/evidence.json` and copied into every run. No IBM dataset has been downloaded or redistributed.
+The default preset is literature-informed and **not empirically calibrated**. Sources support the conceptual design, not the chosen numerical parameters. The machine-readable evidence profile is packaged at `src/synthetic_engine/domains/banking/evidence.json` and copied into every run. The optional [calibration workflow](calibration.md) fits background amounts to the locally downloaded IBM benchmark; raw data is not redistributed in this repository.
 
 This pilot models five illustrative jurisdictions, heterogeneous bank categories, persistent counterparties, segment-dependent skewed amounts, weekday/payday volume variation, common ownership, and matched benign/illicit network motifs. Labels encode simulator intent. Legitimate motifs deliberately overlap illicit ones; neither easy classification nor real-world accuracy is promised.
 
-Not yet implemented: empirical fitting, salary/bill recurrence per customer, complete industry/income profiles, realistic corridor calibration, DST/holiday calendars, account opening/closure during the window, balance conservation, settlement failure, rolling graph features, target-byte stopping, resumption, parallel generation, SQL/JSON adapters, cloud execution, and streaming. These are explicit next stages, not hidden capabilities of this pilot.
+Implemented fitting is limited to one numeric field conditional on one category (banking amounts by currency). Not yet implemented: joint/temporal/network fitting, salary/bill recurrence per customer, complete industry/income profiles, realistic corridor calibration, DST/holiday calendars, account opening/closure during the window, balance conservation, settlement failure, rolling graph features, target-byte stopping, resumption, parallel generation, SQL/JSON adapters, cloud execution, and streaming.
 
 ## Memory, size and reproducibility
 

@@ -6,15 +6,17 @@
 - Banking domain with an optional AML scenario and unlabelled baseline.
 - uv-managed development, lockfile, tests, Parquet, manifests and local validation.
 - Initial specifications, acceptance criteria and domain templates.
+- Shared CSV/Parquet numeric histogram fitting, source hashes and holdout diagnostics.
+- First partial amount calibration against the versioned IBM synthetic benchmark.
 
 ## Next steps, in order
 
 1. **Review the specs and the local checkpoint.** Confirm the current boundaries,
    implemented behavior and pending work. Keep private operational details local.
-2. **Build reference calibration as a shared capability.** Specify the source
-   contract, parameter provenance, dataset hashing, fitting and held-out fidelity
-   reports. Apply it first to banking using an approved accessible dataset. IBM's
-   AML benchmark is synthetic and must be identified as such.
+2. **Extend reference calibration.** The first slice fits conditional amount
+   distributions against IBM HI-Small. Next specify payment-format, temporal and
+   account-activity fitting, then joint/network fidelity and independent evaluation.
+   IBM's AML benchmark remains a synthetic reference, not real customer data.
 3. **Add a second reference-backed domain.** Select it and its source together;
    write its spec before implementation. This should exercise the common engine
    rather than copy banking code. No specific second domain has been selected.

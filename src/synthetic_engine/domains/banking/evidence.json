@@ -8,8 +8,12 @@
       "id": "ibm-aml-data",
       "url": "https://github.com/IBM/AML-Data",
       "type": "synthetic_dataset_documentation",
-      "license_note": "Repository Apache-2.0; dataset CDLA-Sharing-1.0. No dataset downloaded or redistributed.",
-      "supports": ["separate banks and accounts", "payment formats and currencies", "transaction-level ground truth"],
+      "license_note": "Repository Apache-2.0; dataset CDLA-Sharing-1.0. Preset parameters are not fitted; optional calibration loads a separately acquired reference profile. Raw data is not redistributed.",
+      "supports": [
+        "separate banks and accounts",
+        "payment formats and currencies",
+        "transaction-level ground truth"
+      ],
       "limitations": "This is a synthetic benchmark, not observed customer banking data."
     },
     {
@@ -17,15 +21,50 @@
       "url": "https://arxiv.org/abs/2306.16424",
       "title": "Realistic Synthetic Financial Transactions for Anti-Money Laundering Models",
       "type": "paper",
-      "supports": ["entity-based financial simulation", "legitimate and illicit activity in the same transaction network"],
+      "supports": [
+        "entity-based financial simulation",
+        "legitimate and illicit activity in the same transaction network"
+      ],
       "limitations": "Conceptual reference only; no fitted parameters or copied simulator implementation."
     },
     {
       "id": "ibm-amlsim-parameters",
       "url": "https://github.com/IBM/AMLSim/blob/master/paramFiles/README.md",
       "type": "simulator_documentation",
-      "supports": ["fan-in", "fan-out", "cycle", "linked transaction motifs"],
+      "supports": [
+        "fan-in",
+        "fan-out",
+        "cycle",
+        "linked transaction motifs"
+      ],
       "limitations": "Motifs support test scenarios, not real-world prevalence estimates."
+    },
+    {
+      "id": "weber-amlsim-2018",
+      "url": "https://arxiv.org/abs/1812.00076",
+      "type": "paper",
+      "supports": [
+        "preserve transaction graph context"
+      ],
+      "limitations": "AMLSim is distinct from the selected AMLworld benchmark; no numeric parameters copied."
+    },
+    {
+      "id": "jensen-synthaml-2023",
+      "url": "https://doi.org/10.1038/s41597-023-02569-2",
+      "type": "paper",
+      "supports": [
+        "conditional generation and related-table evaluation"
+      ],
+      "limitations": "Different dataset and label semantics; its copula approach is not implemented."
+    },
+    {
+      "id": "cardoso-laundrograph-2022",
+      "url": "https://arxiv.org/abs/2210.14360",
+      "type": "paper",
+      "supports": [
+        "unlabelled graph representation learning as a use case"
+      ],
+      "limitations": "Not a parameter source or validation of this generator."
     }
   ],
   "assumptions": {
@@ -39,5 +78,11 @@
     "funding": "No balance ledger, external funding or settlement model in v0.1; outgoing amounts are not balance-constrained.",
     "account_history": "All accounts predate the observation window. Historical features have a cold start at the window boundary."
   },
-  "pending": ["fit parameters to a user-supplied reference dataset", "quantify fidelity against reference data", "model recurring obligations and account lifecycles", "rolling windows and network holdout", "funding-consistent simulation"]
+  "pending": [
+    "fit payment formats, temporal behavior and account activity",
+    "evaluate joint and network fidelity against references",
+    "model recurring obligations and account lifecycles",
+    "rolling windows and network holdout",
+    "funding-consistent simulation"
+  ]
 }

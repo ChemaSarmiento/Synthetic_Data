@@ -5,6 +5,7 @@ from datetime import date
 
 from synthetic_engine.config import Config
 from synthetic_engine.domains.banking.scenarios.aml import AMLConfig
+from synthetic_engine.domains.banking.calibration import AmountCalibration
 
 
 @dataclass(frozen=True)
@@ -18,6 +19,7 @@ class BankingConfig:
     start_date: str = "2025-01-01"
     max_day_rows: int = 250_000
     aml: AMLConfig = field(default_factory=AMLConfig)
+    amount_calibration: AmountCalibration | None = None
 
     def __post_init__(self):
         for key in ("accounts", "banks", "days", "max_day_rows"):
@@ -36,7 +38,7 @@ class BankingConfig:
         if config.domain != "banking":
             raise ValueError("BankingConfig requires the banking domain")
         parameters = dict(config.parameters)
-        allowed = {"accounts", "banks", "days", "start_date", "max_day_rows", "scenarios"}
+        allowed = {"accounts", "banks", "days", "start_date", "max_day_rows", "scenarios", "amount_calibration"}
         if parameters.keys() - allowed:
             raise ValueError(f"Unknown banking parameters: {sorted(parameters.keys() - allowed)}")
         scenarios = parameters.pop("scenarios", {})
@@ -45,7 +47,12 @@ class BankingConfig:
         aml = scenarios.get("aml", {})
         if not isinstance(aml, dict):
             raise ValueError("aml must be a configuration object")
-        return cls(seed=config.seed, rows=config.rows, batch_rows=config.batch_rows, aml=AMLConfig(**aml), **parameters)
+        calibration = parameters.pop("amount_calibration", None)
+        if calibration is not None and not isinstance(calibration, dict):
+            raise ValueError("amount_calibration must be a configuration object")
+        binding = AmountCalibration(**calibration) if calibration is not None else None
+        return cls(seed=config.seed, rows=config.rows, batch_rows=config.batch_rows,
+                   aml=AMLConfig(**aml), amount_calibration=binding, **parameters)
 
 
 def migrate_legacy(payload: dict):
