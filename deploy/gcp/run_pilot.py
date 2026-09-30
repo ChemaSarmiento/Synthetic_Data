@@ -1,5 +1,7 @@
 """Bounded Cloud Run pilot; metadata credentials, create-only GCS objects."""
 import json
+import hashlib
+import base64
 import os
 from pathlib import Path
 import re
@@ -22,12 +24,16 @@ def upload(bucket, name, path):
         raise ValueError("Pilot uploader limits individual files to 64 MiB")
     query = urlencode({"uploadType": "media", "name": name, "ifGenerationMatch": "0"})
     url = f"https://storage.googleapis.com/upload/storage/v1/b/{quote(bucket, safe='')}/o?{query}"
-    request = Request(url, data=path.read_bytes(), method="POST",
+    data = path.read_bytes()
+    digest = base64.b64encode(hashlib.md5(data, usedforsecurity=False).digest()).decode()
+    request = Request(url, data=data, method="POST",
                       headers={"Authorization": "Bearer " + token(), "Content-Type": "application/octet-stream"})
     with urlopen(request, timeout=120) as response:
         result = json.load(response)
     if int(result["size"]) != path.stat().st_size:
         raise ValueError("Uploaded object size differs from local artifact")
+    if result.get("md5Hash") != digest:
+        raise ValueError("Uploaded object checksum differs from local artifact")
 
 
 def main():

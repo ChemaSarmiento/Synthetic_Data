@@ -73,3 +73,9 @@ managed SQL, BigQuery queries, Pub/Sub or internet dataset download is in scope.
 Tests cover create-only object requests, size checks and manifest-last publication.
 Container build, metadata authentication and actual GCS access remain unverified
 until the approved cloud pilot runs. No claim of deployed success is made.
+
+## Superseded execution scope
+
+The user now requires at least10GB of transaction Parquet. See PLAN-10GB.md for
+the current approval proposal and bulk runner; do not execute this smaller pilot
+as fulfillment of the new size requirement.

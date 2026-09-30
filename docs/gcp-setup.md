@@ -56,3 +56,6 @@ Official references:
 - https://docs.cloud.google.com/billing/docs/how-to/budgets
 
 Concrete pilot proposal: [GCP AML pilot](../deploy/gcp/PLAN.md), pending owner approval.
+
+Current requested target: [at least10GB of AML transaction Parquet](../deploy/gcp/PLAN-10GB.md).
+This plan supersedes the smaller pilot and remains pending resource/cost approval.

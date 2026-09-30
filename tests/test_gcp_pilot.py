@@ -18,7 +18,7 @@ def test_create_only_upload_and_size_verification(tmp_path, monkeypatch):
     monkeypatch.setattr(pilot, 'token', lambda: 'test-token')
     def request(req, timeout):
         requests.append(req)
-        return io.BytesIO(json.dumps({'size':'3'}).encode())
+        return io.BytesIO(json.dumps({'size':'3', 'md5Hash':'kAFQmDzST7DWlj99KOF/cg=='}).encode())
     monkeypatch.setattr(pilot, 'urlopen', request)
     pilot.upload('test-bucket', 'pilots/test/a.parquet', path)
     req=requests[0]
@@ -26,6 +26,9 @@ def test_create_only_upload_and_size_verification(tmp_path, monkeypatch):
     assert parse_qs(urlparse(req.full_url).query)['ifGenerationMatch'] == ['0']
     monkeypatch.setattr(pilot, 'urlopen', lambda *a, **k: io.BytesIO(b'{"size":"4"}'))
     with pytest.raises(ValueError, match='size'):
+        pilot.upload('test-bucket', 'x', path)
+    monkeypatch.setattr(pilot, 'urlopen', lambda *a, **k: io.BytesIO(b'{"size":"3","md5Hash":"wrong"}'))
+    with pytest.raises(ValueError, match='checksum'):
         pilot.upload('test-bucket', 'x', path)
 
 
