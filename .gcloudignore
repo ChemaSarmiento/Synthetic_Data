@@ -1,0 +1,16 @@
+**
+!pyproject.toml
+!uv.lock
+!README.md
+!src/
+!src/**
+!configs/
+!configs/gcp/
+!configs/gcp/aml-pilot.json
+!deploy/
+!deploy/gcp/
+!deploy/gcp/Dockerfile
+!deploy/gcp/cloudbuild.yaml
+!deploy/gcp/run_pilot.py
+**/__pycache__/**
+**/*.egg-info/**

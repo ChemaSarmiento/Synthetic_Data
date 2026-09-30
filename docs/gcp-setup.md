@@ -2,7 +2,7 @@
 
 ## Budget
 
-Planning assumption: USD 20 per month, pending confirmation of the billing period.
+Approved monthly budget: MXN 400, with 50/80/100% alerts. This is not a hard spending cap.
 No cloud resources, billing links, APIs, service accounts, or budgets are to be created without first presenting the proposed changes and estimated costs to the owner.
 
 Budget alerts do not enforce a spending cap. Before deployment, review billing-account-wide free-tier consumption, storage retention, compute, networking, image storage, query limits, and taxes where applicable. Do not assume a 15 GB dataset fits within free allowances.
@@ -54,3 +54,5 @@ Official references:
 - https://docs.cloud.google.com/free/docs/free-cloud-features
 - https://cloud.google.com/run/pricing
 - https://docs.cloud.google.com/billing/docs/how-to/budgets
+
+Concrete pilot proposal: [GCP AML pilot](../deploy/gcp/PLAN.md), pending owner approval.

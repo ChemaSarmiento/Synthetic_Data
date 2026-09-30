@@ -1,0 +1,6 @@
+.git
+.venv
+CHECKPOINT
+data
+outputs
+**/__pycache__
