@@ -16,7 +16,8 @@ Access requires authorization to the bucket; no public objects are enabled.
 | Positive laundering labels | 429,024 (about 0.394%) |
 | Intentional laundering motif edges | 429,024 |
 | Matched benign motif edges | 4,353,476 |
-| Job execution | 4,682.13 seconds; 1h 18m 02s |
+| Generator elapsed time | 4,682.13 seconds; 1h 18m 02s |
+| Cloud Run task time (includes startup) | 4,741.82 seconds; 1h 19m 02s |
 | Engine semantic checks | Passed separately in every shard |
 
 The acceptance minimum was 10,000,000,000 transaction-only bytes; labels and
