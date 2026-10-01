@@ -58,4 +58,8 @@ Official references:
 Concrete pilot proposal: [GCP AML pilot](../deploy/gcp/PLAN.md), pending owner approval.
 
 Current requested target: [at least10GB of AML transaction Parquet](../deploy/gcp/PLAN-10GB.md).
-This plan supersedes the smaller pilot and remains pending resource/cost approval.
+This plan supersedes the smaller pilot. The owner approved one build and bulk
+execution on 2026-09-30; completion must be confirmed by the remote audit.
+
+The authorized10GB execution is complete; see the [measured dataset result](gcp-dataset-result.md).
+The object data remains private in GCS and follows the configured30-day lifecycle.

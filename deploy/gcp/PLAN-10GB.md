@@ -1,7 +1,8 @@
-# AML GCP dataset: minimum 10 GB — pending approval
+# AML GCP dataset: minimum 10 GB — approved 2026-09-30
 
 2026-09-30. Supersedes the one-million-row execution scope in PLAN.md.
-No GCP resources have been created or changed for either plan.
+Owner approved this scope on 2026-09-30. Resources are provisioned and the single
+bulk execution is in progress; completion awaits the final remote audit.
 
 ## Acceptance contract
 
